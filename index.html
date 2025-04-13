@@ -2,64 +2,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Telegram Bot Uploader</title>
-    <style>
-        body {
-            background-color: #111;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 30px;
-        }
-        form {
-            max-width: 500px;
-            margin: auto;
-            background: #222;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        input, textarea, select, button {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>📤 Multi Video Uploader with Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+    input[type="file"] {
+      background: #fff;
+      color: #000;
+    }
+    video {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    .preview-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-    <h1>📤 Telegram Bot Uploader</h1>
-    <form id="uploadForm">
-        <input type="file" name="file" accept="image/*,video/*" required />
-        <textarea name="caption" placeholder="Enter caption..." rows="3"></textarea>
-        <select name="channel">
-            <option value="@pinayarchives1">@pinayarchives1</option>
-            <option value="@pinayarchives69">@pinayarchives69</option>
-            <option value="@pinayarchives9">@pinayarchives9</option>
-        </select>
-        <button type="submit">Upload & Post</button>
-        <p id="status"></p>
-    </form>
+  <h2>📤 Upload up to 10 Videos</h2>
+  <form id="uploadForm">
+    <input type="file" name="file" id="fileInput" accept="video/*" multiple required />
+    <textarea name="caption" placeholder="Enter caption for all videos..." rows="3"></textarea>
+    <select name="channel">
+      <option value="@pinayarchives1">@pinayarchives1</option>
+      <option value="@pinayarchives69">@pinayarchives69</option>
+      <option value="@pinayarchives9">@pinayarchives9</option>
+    </select>
+    <div class="preview-container" id="previewContainer"></div>
+    <button type="submit">🚀 Upload</button>
+    <p id="status"></p>
+  </form>
 
-    <script>
-        document.getElementById("uploadForm").addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const res = await fetch("https://tguploader-production.up.railway.app/upload", {
-                method: "POST",
-                body: formData
-            });
-            const text = await res.text();
-            document.getElementById("status").innerText = text;
-        });
-    </script>
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const previewContainer = document.getElementById("previewContainer");
+
+    fileInput.addEventListener("change", function() {
+      previewContainer.innerHTML = "";
+      const files = fileInput.files;
+      if (files.length > 10) {
+        alert("❌ Max 10 videos allowed.");
+        fileInput.value = "";
+        return;
+      }
+
+      for (let i = 0; i < files.length; i++) {
+        const video = document.createElement("video");
+        video.controls = true;
+        video.src = URL.createObjectURL(files[i]);
+        previewContainer.appendChild(video);
+      }
+    });
+
+    document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const files = form.file.files;
+      const caption = form.caption.value;
+      const channel = form.channel.value;
+      const status = document.getElementById("status");
+
+      if (files.length > 10) {
+        status.innerText = "❌ Max 10 videos allowed.";
+        return;
+      }
+
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append("file", files[i]);
+        formData.append("caption", caption);
+        formData.append("channel", channel);
+
+        status.innerText = `Uploading video ${i + 1} of ${files.length}...`;
+
+        try {
+          const res = await fetch("https://tguploader-production.up.railway.app/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const text = await res.text();
+          console.log(text);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      status.innerText = "✅ All videos uploaded!";
+      form.reset();
+      previewContainer.innerHTML = "";
+    });
+  </script>
 </body>
 </html>
