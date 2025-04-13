@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Telegram Bot Uploader</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 30px;
+        }
+        form {
+            max-width: 500px;
+            margin: auto;
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        input, textarea, select, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>📤 Telegram Bot Uploader</h1>
+    <form id="uploadForm">
+        <input type="file" name="file" accept="image/*,video/*" required />
+        <textarea name="caption" placeholder="Enter caption..." rows="3"></textarea>
+        <select name="channel">
+            <option value="@pinayarchives1">@pinayarchives1</option>
+            <option value="@pinayarchives69">@pinayarchives69</option>
+            <option value="@pinayarchives9">@pinayarchives9</option>
+        </select>
+        <button type="submit">Upload & Post</button>
+        <p id="status"></p>
+    </form>
+
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const res = await fetch("https://tguploader-production.up.railway.app/upload", {
+                method: "POST",
+                body: formData
+            });
+            const text = await res.text();
+            document.getElementById("status").innerText = text;
+        });
+    </script>
+</body>
+</html>
